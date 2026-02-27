@@ -13,7 +13,7 @@ const posts = (await getCollection('blog')).sort(
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
@@ -58,6 +58,11 @@ const posts = (await getCollection('blog')).sort(
 				color: rgb(var(--black));
 				line-height: 1;
 			}
+			.category {
+				margin: 0.25rem 0 0 0;
+				color: rgb(var(--gray));
+				font-size: 0.9rem;
+			}
 			.date {
 				margin: 0;
 				color: rgb(var(--gray));
@@ -99,6 +104,7 @@ const posts = (await getCollection('blog')).sort(
 										<Image width={720} height={360} src={post.data.heroImage} alt="" />
 									)}
 									<h4 class="title">{post.data.title}</h4>
+									<p class="category">{post.data.category}</p>
 									<p class="date">
 										<FormattedDate date={post.data.pubDate} />
 									</p>
