@@ -22,19 +22,80 @@ const posts = (await getCollection('blog'))
 <html lang="ko">
 	<head>
 		<BaseHead title={`${SITE_TITLE} · ${category}`} description={SITE_DESCRIPTION} />
+		<style>
+			.card-grid {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 1.5rem;
+				margin-top: 1.5rem;
+			}
+			.card {
+				background: #fff;
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 14px;
+				padding: 1.25rem 1.25rem 1.4rem;
+				box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+				text-decoration: none;
+				color: inherit;
+				transition: 0.2s ease;
+			}
+			.card:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+				border-color: rgba(0,0,0,0.08);
+			}
+			.card-head {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 0.5rem;
+				margin-bottom: 0.6rem;
+				color: rgb(var(--gray));
+				font-size: 0.9rem;
+			}
+			.pill {
+				background: #f0f2ff;
+				color: var(--accent-dark);
+				padding: 0.2rem 0.55rem;
+				border-radius: 999px;
+				font-weight: 600;
+				font-size: 0.8rem;
+			}
+			.title {
+				margin: 0 0 0.5rem 0;
+				line-height: 1.35;
+				color: rgb(var(--black));
+				font-size: 1.15rem;
+			}
+			.desc {
+				margin: 0;
+				color: rgb(var(--gray));
+				font-size: 0.95rem;
+				line-height: 1.6;
+			}
+			@media (max-width: 900px) {
+				.card-grid {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
 			<h1>{category}</h1>
-			<ul>
+			<div class="card-grid">
 				{posts.map((post) => (
-					<li>
-						<a href={`/blog/${post.id}/`}>{post.data.title}</a>
-						<span> · <FormattedDate date={post.data.pubDate} /></span>
-					</li>
+					<a class="card" href={`/blog/${post.id}/`}>
+						<div class="card-head">
+							<span class="pill">{post.data.category}</span>
+							<span class="date"><FormattedDate date={post.data.pubDate} /></span>
+						</div>
+						<h3 class="title">{post.data.title}</h3>
+						<p class="desc">{post.data.description}</p>
+					</a>
 				))}
-			</ul>
+			</div>
 		</main>
 		<Footer />
 	</body>
