@@ -43,3 +43,11 @@ DLM이 연구 주류로 성장하려면 **재현성과 공정 비교 환경**이
 **참고**  
 - HF: https://huggingface.co/papers/2602.22661  
 - PDF: https://arxiv.org/pdf/2602.22661.pdf
+
+
+**Figures (핵심 이미지)**  
+![](/images/2602.22661/fig1.jpg)
+
+![](/images/2602.22661/fig2.jpg)
+
+![](/images/2602.22661/fig3.jpg)
