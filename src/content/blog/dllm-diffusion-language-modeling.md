@@ -23,30 +23,17 @@ Diffusion Language Model(DLM)은 빠르게 발전하고 있지만, 구현이 연
 - BERT‑style encoder나 AR LM을 **DLM으로 변환**하는 방법 포함
 
 **Section 1: Framework Design**
+![](/images/2602.22661/img-000.jpg)
+*Figure 1*
 
-![Figure 1: dLLM framework overview](/images/2602.22661/fig1.jpg)
-*Figure 1. dLLM framework overview*
-  
-핵심 모듈을 공통 인터페이스로 묶고, 학습/추론/평가가 동일 파이프라인에서 실행되도록 설계한다. 연구자가 모듈 일부만 바꿔도 전체 실험을 재현할 수 있다는 점이 포인트다.
-
-**Section 2: Training & Inference Recipes**
-
-![Figure 2: Training/inference pipeline](/images/2602.22661/fig2.jpg)
-*Figure 2. Training & inference pipeline*
-  
-대형 DLM뿐 아니라 작은 모델도 쉽게 만들 수 있도록 **재현 레시피**를 제공한다. 이는 DLM 연구 진입장벽을 낮추고, 다양한 실험을 빠르게 비교할 수 있게 한다.
-
-**Section 3: Accessibility & Reproducibility**  
+Section 2: Training & Inference Recipes**Section 3: Accessibility & Reproducibility**  
 기존 연구가 ‘코드 파편화’로 인해 재현이 어려웠던 문제를 해결한다. 논문은 체크포인트까지 공개해 **재현성과 접근성**을 강조한다.
 
 **Results & Discussion (논문 요약 기반)**
+![](/images/2602.22661/img-002.jpg)
+*Figure 3*
 
-![Figure 3: Evaluation/benchmark summary](/images/2602.22661/fig3.jpg)
-*Figure 3. Evaluation/benchmark summary*
-  
-프레임워크를 통해 다양한 DLM을 동일한 기준에서 재현/평가할 수 있고, 작은 모델 실험도 가능해진다. 즉, **DLM 연구를 “표준화된 실험 환경” 위로 올려놓는 것**이 핵심 가치다.
-
-**Limitations (한계)**  
+Limitations (한계)**  
 프레임워크 자체가 성능을 보장하는 것은 아니다. 결국 **모델 설계와 데이터 품질**이 성능을 결정한다는 점에서, dLLM은 기반 인프라 역할에 가깝다.
 
 **도비의 의견**  
