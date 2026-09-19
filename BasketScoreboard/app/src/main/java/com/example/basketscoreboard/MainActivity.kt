@@ -72,22 +72,36 @@ fun Scoreboard() {
 
     fun finish(){
         running=false
-        val a=current.first; val b=current.second
-        val lo=minOf(a,b); val hi=maxOf(a,b); val k=key(a,b)
-        val ls=if(a==lo) left else right
-        val hs=if(a==lo) right else left
+        val a=current.first
+        val b=current.second
+        val lo=minOf(a,b)
+        val hi=maxOf(a,b)
+        val k=key(a,b)
         val old=stats[k]?:Stats()
+
+        val currentLow=if(a==lo) left else right
+        val currentHigh=if(a==lo) right else left
+        val quarterLow=maxOf(0,currentLow-old.lowTotal)
+        val quarterHigh=maxOf(0,currentHigh-old.highTotal)
+
         stats[k]=old.copy(
-            lowTotal=old.lowTotal+ls, highTotal=old.highTotal+hs,
-            lowWins=old.lowWins+if(ls>hs)1 else 0,
-            highWins=old.highWins+if(hs>ls)1 else 0,
-            draws=old.draws+if(ls==hs)1 else 0,
-            quarters=old.quarters+Quarter(old.quarters.size+1,ls,hs)
+            lowTotal=currentLow,
+            highTotal=currentHigh,
+            lowWins=old.lowWins+if(quarterLow>quarterHigh)1 else 0,
+            highWins=old.highWins+if(quarterHigh>quarterLow)1 else 0,
+            draws=old.draws+if(quarterLow==quarterHigh)1 else 0,
+            quarters=old.quarters+Quarter(old.quarters.size+1,quarterLow,quarterHigh)
         )
+
         expanded=k
         gameIndex++
-        left=0
-        right=0
+
+        val next=schedule()[gameIndex%schedule().size]
+        val nextLo=minOf(next.first,next.second)
+        val nextStats=stats[key(next.first,next.second)]?:Stats()
+        left=if(next.first==nextLo) nextStats.lowTotal else nextStats.highTotal
+        right=if(next.first==nextLo) nextStats.highTotal else nextStats.lowTotal
+
         seconds=baseSeconds
         running=false
         gameOver=false
