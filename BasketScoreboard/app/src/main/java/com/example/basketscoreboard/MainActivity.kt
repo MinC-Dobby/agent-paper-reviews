@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -45,6 +46,7 @@ fun Scoreboard() {
     var running by remember { mutableStateOf(false) }
     var timeDialog by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf<String?>(null) }
+    var gameOver by remember { mutableStateOf(false) }
     val stats = remember { mutableStateMapOf<String,Stats>() }
 
     fun schedule() = if(teamCount==2) listOf(1 to 2,2 to 1)
@@ -53,13 +55,18 @@ fun Scoreboard() {
 
     LaunchedEffect(running,seconds){
         if(running && seconds>0){
-            delay(1000); seconds--
-            if(seconds<=0) running=false
+            delay(1000)
+            seconds--
+            if(seconds<=0){
+                seconds=0
+                running=false
+                gameOver=true
+            }
         }
     }
 
     fun reset(){
-        running=false; gameIndex=0; left=0; right=0
+        running=false; gameOver=false; gameIndex=0; left=0; right=0
         seconds=baseSeconds; stats.clear(); expanded=null
     }
 
@@ -77,13 +84,20 @@ fun Scoreboard() {
             draws=old.draws+if(ls==hs)1 else 0,
             quarters=old.quarters+Quarter(old.quarters.size+1,ls,hs)
         )
-        expanded=k; gameIndex++; left=0; right=0; seconds=baseSeconds
+        expanded=k
+        gameIndex++
+        left=0
+        right=0
+        seconds=baseSeconds
+        running=false
+        gameOver=false
     }
 
     if(timeDialog) TimeDialog(seconds,{timeDialog=false}) {
         running=false; seconds=it; baseSeconds=it; timeDialog=false
     }
 
+    Box(Modifier.fillMaxSize()) {
     Row(
         Modifier.fillMaxSize().padding(10.dp),
         horizontalArrangement=Arrangement.spacedBy(10.dp)
@@ -118,16 +132,22 @@ fun Scoreboard() {
                         Text(
                             "%02d:%02d".format(seconds/60,seconds%60),
                             fontSize=46.sp,fontWeight=FontWeight.Black,
-                            modifier=Modifier.clickable{timeDialog=true}.padding(horizontal=12.dp)
+                            modifier=Modifier.clickable(enabled=!gameOver){timeDialog=true}.padding(horizontal=12.dp)
                         )
                         Text("시간을 누르면 직접 설정",fontSize=10.sp)
                         Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){
-                            OutlinedButton({seconds=maxOf(0,seconds-30)}){Text("-30초")}
-                            OutlinedButton({seconds+=30}){Text("+30초")}
+                            OutlinedButton({
+                                seconds=maxOf(0,seconds-30)
+                                if(seconds==0){ running=false; gameOver=true }
+                            }, enabled=!gameOver){Text("-30초")}
+                            OutlinedButton({seconds+=30}, enabled=!gameOver){Text("+30초")}
                         }
                     }
                     Column(horizontalAlignment=Alignment.CenterHorizontally){
-                        Button({running=!running}){Text(if(running)"일시정지" else "시작")}
+                        Button(
+                            onClick={ if(!gameOver) running=!running },
+                            enabled=!gameOver
+                        ){Text(if(running)"일시정지" else "시작")}
                         TextButton({running=false;seconds=baseSeconds}){Text("초기화")}
                     }
                 }
@@ -137,11 +157,11 @@ fun Scoreboard() {
                 Modifier.fillMaxWidth().weight(1f),
                 horizontalArrangement=Arrangement.spacedBy(10.dp)
             ){
-                TeamCard(current.first,left,{left=maxOf(0,left+it)},Modifier.weight(1f).fillMaxHeight())
-                TeamCard(current.second,right,{right=maxOf(0,right+it)},Modifier.weight(1f).fillMaxHeight())
+                TeamCard(current.first,left,{left=maxOf(0,left+it)},Modifier.weight(1f).fillMaxHeight(),enabled=!gameOver)
+                TeamCard(current.second,right,{right=maxOf(0,right+it)},Modifier.weight(1f).fillMaxHeight(),enabled=!gameOver)
             }
 
-            Button({finish()},Modifier.fillMaxWidth().height(50.dp)){
+            Button({finish()},Modifier.fillMaxWidth().height(50.dp),enabled=!gameOver){
                 Text("쿼터 종료 · 대진별 누적 · 다음 대진",fontWeight=FontWeight.Bold)
             }
         }
@@ -161,10 +181,40 @@ fun Scoreboard() {
             }
         }
     }
+
+    if(gameOver){
+        Box(
+            Modifier
+                .fillMaxSize()
+                .clickable { finish() }
+                .padding(20.dp),
+            contentAlignment=Alignment.Center
+        ){
+            Surface(
+                color=Color.Black.copy(alpha=0.72f),
+                shape=MaterialTheme.shapes.extraLarge
+            ){
+                Column(
+                    Modifier.padding(horizontal=52.dp,vertical=30.dp),
+                    horizontalAlignment=Alignment.CenterHorizontally,
+                    verticalArrangement=Arrangement.spacedBy(8.dp)
+                ){
+                    Text("경기 종료",fontSize=42.sp,fontWeight=FontWeight.Black,color=Color.White)
+                    Text(
+                        current.first.toString()+"팀  "+left+" : "+right+"  "+current.second+"팀",
+                        fontSize=32.sp,fontWeight=FontWeight.Bold,color=Color.White
+                    )
+                    Text("화면을 터치하면 다음 경기로 넘어갑니다",fontSize=16.sp,color=Color.White)
+                    Text("다음 경기는 시작 버튼을 누를 때까지 대기합니다",fontSize=13.sp,color=Color.White.copy(alpha=0.8f))
+                }
+            }
+        }
+    }
+    }
 }
 
 @Composable
-fun TeamCard(team:Int,score:Int,change:(Int)->Unit,modifier:Modifier){
+fun TeamCard(team:Int,score:Int,change:(Int)->Unit,modifier:Modifier,enabled:Boolean=true){
     Card(modifier){
         Column(
             Modifier.fillMaxSize().padding(8.dp),
@@ -175,10 +225,10 @@ fun TeamCard(team:Int,score:Int,change:(Int)->Unit,modifier:Modifier){
             Text(score.toString(),fontSize=68.sp,fontWeight=FontWeight.Black)
             Row(horizontalArrangement=Arrangement.spacedBy(7.dp)){
                 listOf(1,2,3).forEach{ n ->
-                    FilledTonalButton({change(n)}){Text("+"+n,fontSize=17.sp,fontWeight=FontWeight.Bold)}
+                    FilledTonalButton({change(n)},enabled=enabled){Text("+"+n,fontSize=17.sp,fontWeight=FontWeight.Bold)}
                 }
             }
-            OutlinedButton({change(-1)}){Text("-1")}
+            OutlinedButton({change(-1)},enabled=enabled){Text("-1")}
         }
     }
 }
