@@ -211,7 +211,7 @@ private fun ScorePanel(team:Int,score:Int,enabled:Boolean,onChange:(Int)->Unit,m
             listOf(1,2,3).forEach{n->
                 Button(onClick={onChange(n)},enabled=enabled,colors=ButtonDefaults.buttonColors(containerColor=Color(0xFF1C1C1C),contentColor=Color.White),contentPadding=PaddingValues(horizontal=16.dp,vertical=10.dp)){Text("+"+n,fontSize=18.sp,fontWeight=FontWeight.Bold)}
             }
-            OutlinedButton(onClick={onChange(-1)},enabled=enabled,colors=ButtonDefaults.outlinedButtonColors(contentColor=Color.White),contentPadding=PaddingValues(horizontal=14.dp,vertical=10.dp)){Text("-1",fontSize=18.sp)}
+            OutlinedButton(onClick={onChange(-1)},enabled=enabled,modifier=Modifier.widthIn(min=64.dp),colors=ButtonDefaults.outlinedButtonColors(contentColor=Color.White),contentPadding=PaddingValues(horizontal=10.dp,vertical=10.dp)){Text("-1",fontSize=18.sp,maxLines=1)}
         }
     }
 }
