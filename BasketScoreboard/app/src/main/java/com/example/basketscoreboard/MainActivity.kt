@@ -30,12 +30,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         window.statusBarColor = android.graphics.Color.BLACK
         window.navigationBarColor = android.graphics.Color.BLACK
-        hideSystemUI()
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background=Color.Black,surface=Color.Black,primary=Color(0xFFFFC107),onBackground=Color.White,onSurface=Color.White)) {
                 Scoreboard()
             }
         }
+        window.decorView.post { hideSystemUI() }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
