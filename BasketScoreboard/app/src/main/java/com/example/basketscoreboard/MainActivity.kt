@@ -81,6 +81,7 @@ fun Scoreboard(){
     var timeDialog by remember { mutableStateOf(false) }
     var recordsDialog by remember { mutableStateOf(false) }
     var pendingMatch by remember { mutableStateOf<Pair<Int,Int>?>(null) }
+    var pendingTeamCount by remember { mutableStateOf<Int?>(null) }
     val stats = remember { mutableStateMapOf<String,Stats>() }
 
     fun schedule()=if(teamCount==2) listOf(1 to 2,2 to 1) else listOf(1 to 2,1 to 3,2 to 3,2 to 1,3 to 1,3 to 2)
@@ -159,13 +160,29 @@ fun Scoreboard(){
         )
     }
 
+    pendingTeamCount?.let { targetCount ->
+        AlertDialog(
+            onDismissRequest={pendingTeamCount=null},
+            title={Text("팀 수 변경")},
+            text={Text("현재 스코어와 누적 기록이 모두 삭제됩니다. "+targetCount+"팀 모드로 변경할까요?")},
+            confirmButton={
+                Button(onClick={
+                    teamCount=targetCount
+                    resetAll()
+                    pendingTeamCount=null
+                }){Text("변경")}
+            },
+            dismissButton={TextButton(onClick={pendingTeamCount=null}){Text("취소")}}
+        )
+    }
+
     Box(Modifier.fillMaxSize().background(Color.Black)){
         Column(Modifier.fillMaxSize().padding(horizontal=14.dp,vertical=8.dp)){
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
                 Text("GAME "+(gameIndex+1)+"   "+current.first+"팀 VS "+current.second+"팀",color=Color(0xFFBDBDBD),fontSize=15.sp,fontWeight=FontWeight.Bold)
                 Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){
                     OutlinedButton(onClick={recordsDialog=true},colors=ButtonDefaults.outlinedButtonColors(contentColor=Color.White)){ Text("기록") }
-                    OutlinedButton(onClick={teamCount=if(teamCount==3)2 else 3; resetAll()},colors=ButtonDefaults.outlinedButtonColors(contentColor=Color.White)){ Text(if(teamCount==3)"3팀" else "2팀") }
+                    OutlinedButton(onClick={pendingTeamCount=if(teamCount==3)2 else 3},colors=ButtonDefaults.outlinedButtonColors(contentColor=Color.White)){ Text(if(teamCount==3)"3팀" else "2팀") }
                 }
             }
 
