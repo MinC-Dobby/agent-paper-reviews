@@ -80,10 +80,24 @@ fun Scoreboard(){
     var gameOver by remember { mutableStateOf(false) }
     var timeDialog by remember { mutableStateOf(false) }
     var recordsDialog by remember { mutableStateOf(false) }
+    var pendingMatch by remember { mutableStateOf<Pair<Int,Int>?>(null) }
     val stats = remember { mutableStateMapOf<String,Stats>() }
 
     fun schedule()=if(teamCount==2) listOf(1 to 2,2 to 1) else listOf(1 to 2,1 to 3,2 to 3,2 to 1,3 to 1,3 to 2)
     val current=schedule()[gameIndex%schedule().size]
+
+    fun loadMatch(a:Int,b:Int){
+        val idx=schedule().indexOfFirst{it.first==a && it.second==b}
+        if(idx>=0) gameIndex=idx
+        val lo=minOf(a,b)
+        val s=stats[pairKey(a,b)]?:Stats()
+        left=if(a==lo) s.lowTotal else s.highTotal
+        right=if(a==lo) s.highTotal else s.lowTotal
+        seconds=baseSeconds
+        running=false
+        gameOver=false
+        recordsDialog=false
+    }
 
     LaunchedEffect(running,seconds){
         if(running && seconds>0){
@@ -123,7 +137,27 @@ fun Scoreboard(){
     if(timeDialog) TimeDialog(seconds,{timeDialog=false}) {
         running=false; seconds=it; baseSeconds=it; timeDialog=false
     }
-    if(recordsDialog) RecordsDialog(teamCount,stats){ recordsDialog=false }
+    if(recordsDialog) RecordsDialog(
+        teamCount=teamCount,
+        stats=stats,
+        onDismiss={recordsDialog=false},
+        onLoad={a,b->
+            pendingMatch=a to b
+            recordsDialog=false
+        }
+    )
+
+    pendingMatch?.let { match ->
+        AlertDialog(
+            onDismissRequest={pendingMatch=null},
+            title={Text("대진 변경")},
+            text={Text(match.first.toString()+"팀 vs "+match.second+"팀 누적 점수를 불러와 현재 경기로 전환할까요?")},
+            confirmButton={
+                Button(onClick={loadMatch(match.first,match.second);pendingMatch=null}){Text("불러오기")}
+            },
+            dismissButton={TextButton(onClick={pendingMatch=null}){Text("취소")}}
+        )
+    }
 
     Box(Modifier.fillMaxSize().background(Color.Black)){
         Column(Modifier.fillMaxSize().padding(horizontal=14.dp,vertical=8.dp)){
@@ -183,7 +217,7 @@ private fun ScorePanel(team:Int,score:Int,enabled:Boolean,onChange:(Int)->Unit,m
 }
 
 @Composable
-private fun RecordsDialog(teamCount:Int,stats:Map<String,Stats>,onDismiss:()->Unit){
+private fun RecordsDialog(teamCount:Int,stats:Map<String,Stats>,onDismiss:()->Unit,onLoad:(Int,Int)->Unit){
     AlertDialog(
         onDismissRequest=onDismiss,
         containerColor=Color(0xFF111111),
@@ -197,6 +231,14 @@ private fun RecordsDialog(teamCount:Int,stats:Map<String,Stats>,onDismiss:()->Un
                         Column(Modifier.fillMaxWidth().padding(12.dp)){
                             Text(lo.toString()+"팀 vs "+hi+"팀",color=Color.White,fontWeight=FontWeight.Bold)
                             Text(s.lowTotal.toString()+" : "+s.highTotal,color=Color(0xFFFFC107),fontSize=30.sp,fontWeight=FontWeight.Black,modifier=Modifier.fillMaxWidth(),textAlign=TextAlign.Center)
+                            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                                Button(onClick={onLoad(lo,hi)},modifier=Modifier.weight(1f),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC107),contentColor=Color.Black)){
+                                    Text(lo.toString()+"팀 → "+hi+"팀",fontSize=12.sp,fontWeight=FontWeight.Bold)
+                                }
+                                OutlinedButton(onClick={onLoad(hi,lo)},modifier=Modifier.weight(1f),colors=ButtonDefaults.outlinedButtonColors(contentColor=Color.White)){
+                                    Text(hi.toString()+"팀 → "+lo+"팀",fontSize=12.sp,fontWeight=FontWeight.Bold)
+                                }
+                            }
                             if(s.quarters.isNotEmpty()){
                                 HorizontalDivider(color=Color.DarkGray,modifier=Modifier.padding(vertical=6.dp))
                                 s.quarters.forEach{q->
