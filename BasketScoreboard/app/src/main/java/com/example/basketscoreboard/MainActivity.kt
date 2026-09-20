@@ -170,7 +170,7 @@ fun Scoreboard(){
 
 @Composable
 private fun ScorePanel(team:Int,score:Int,enabled:Boolean,onChange:(Int)->Unit,modifier:Modifier){
-    Column(modifier.fillMaxHeight(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center){
+    Column(modifier.fillMaxHeight().padding(horizontal=18.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center){
         Text(team.toString()+"팀",color=Color(0xFFEEEEEE),fontSize=32.sp,fontWeight=FontWeight.Bold)
         Text(score.toString(),color=Color.White,fontSize=132.sp,fontWeight=FontWeight.Black,textAlign=TextAlign.Center,maxLines=1)
         Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){
